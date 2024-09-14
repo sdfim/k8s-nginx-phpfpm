@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: app
+          image: kslndr/kube-laravel:latest
+          ports:
+            - containerPort: 9000
+          env:
+            - name: DB_HOST
+              value: mysql
+            - name: REDIS_HOST
+              value: redis
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www
+      volumes:
+        - name: app-code
+          persistentVolumeClaim:
+            claimName: project-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+spec:
+  selector:
+    app: app
+  type: NodePort
+  ports:
+    - port: 9000
+      targetPort: 9000

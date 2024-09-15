@@ -18,9 +18,13 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Install Node.js and npm
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - \
-    && apt-get install -y nodejs
+# Install Node.js and npm (version 18.x)
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm
+
+# Add npm to PATH
+ENV PATH /usr/local/bin:/usr/local/lib/node_modules/npm/bin:$PATH
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -31,9 +35,8 @@ WORKDIR /var/www
 # Copy existing application directory contents
 COPY . /var/www
 
+# Copy custom php-fpm configuration
+COPY config/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+
 # Change ownership of our applications
 RUN chown -R www-data:www-data /var/www
-
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]

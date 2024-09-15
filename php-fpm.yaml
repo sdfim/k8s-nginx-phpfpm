@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-fpm
+  labels:
+    app: php-fpm
+    layer: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php-fpm
+  template:
+    metadata:
+      labels:
+        app: php-fpm
+    spec:
+      containers:
+        - name: php-fpm
+          image: kslndr/kube-laravel:latest
+          ports:
+            - containerPort: 9000
+          env:
+            - name: DB_HOST
+              value: mysql
+            - name: REDIS_HOST
+              value: redis
+          volumeMounts:
+            - mountPath: /var/www/
+              name: contents
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      volumes:
+        - name: contents
+          persistentVolumeClaim:
+            claimName: app-pvc
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: php-fpm
+  labels:
+    app: php-fpm
+    layer: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: php-fpm
+  ports:
+    - port: 9000
+      targetPort: 9000

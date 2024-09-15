@@ -14,12 +14,12 @@ spec:
     spec:
       containers:
         - name: mysql
-          image: mysql:5.7
+          image: mysql:8.0.28
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: '1704'
+              value: ${MYSQL_ROOT_PASSWORD}
             - name: MYSQL_DATABASE
-              value: blog
+              value: ${MYSQL_DATABASE}
           ports:
             - containerPort: 3306
           volumeMounts:
